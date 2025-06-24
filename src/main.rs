@@ -1,14 +1,16 @@
-use std::collections::HashMap;
+use std::thread::sleep;
 
 #[derive(Debug)]
 struct Particle {
+    coordinates: Coordinates,
     energy: i32,  // Joules
     mass: i32  // Atomic Mass
 }
 
 impl Particle {
-    fn new(energy: i32, mass: i32) -> Particle {
+    fn new(coordinates: Coordinates, energy: i32, mass: i32) -> Particle {
         Particle {
+            coordinates,
             energy,
             mass
         }
@@ -51,16 +53,31 @@ impl Coordinates {
 //     }
 // }
 
-fn main() {
-    // let mut container: Vec<Particle> = Vec::new();
-    let mut particles: HashMap<Coordinates, Particle> = HashMap::new();
-    for i in 0..4 {
-        particles.insert(
-            Coordinates::new(i, 0, 0),
-            Particle::new(37982, 1)
-        );
-    }
-    for i in &particles {
+fn display_all_particle_info(particles: &Vec<Particle>) {
+    for i in particles {
         println!("Particles: {i:?}")
     }
+}
+
+fn tick(mut particles: Vec<Particle>) {
+    for particle in &mut particles {
+        particle.coordinates.x += 1;
+    }
+    
+    display_all_particle_info(&particles);
+    let sleep_time = core::time::Duration::new(1, 0);
+    sleep(sleep_time);
+    tick(particles);
+}
+
+fn main() {
+    // let mut container: Vec<Particle> = Vec::new();
+    let mut particles: Vec<Particle> = Vec::new();
+    for i in 0..4 {
+        let coordinates = Coordinates::new(i, 0, 0);
+        particles.push(Particle::new(coordinates, 37982, 1));
+    }
+    display_all_particle_info(&particles);
+    
+    tick(particles);
 }
