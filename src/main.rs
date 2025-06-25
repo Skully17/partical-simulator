@@ -2,15 +2,15 @@ use std::thread::sleep;
 
 #[derive(Debug)]
 struct Particle {
-    coordinates: Coordinates,
+    id: i32,
     energy: i32,  // Joules
     mass: i32  // Atomic Mass
 }
 
 impl Particle {
-    fn new(coordinates: Coordinates, energy: i32, mass: i32) -> Particle {
+    fn new(id: i32, energy: i32, mass: i32) -> Particle {
         Particle {
-            coordinates,
+            id,
             energy,
             mass
         }
@@ -18,20 +18,53 @@ impl Particle {
 }
 
 #[derive(Eq, Hash, PartialEq, Debug)]
-struct Coordinates {
+struct Coordinate {
     x: i32,
     y: i32,
-    z: i32
+    z: i32,
+    particle_id: i32
 }
 
-impl Coordinates {
-    fn new(x: i32, y:i32, z:i32) -> Coordinates {
-        Coordinates {
+impl Coordinate {
+    fn new(x: i32, y:i32, z:i32, particle_id: i32) -> Coordinate {
+        Coordinate {
             x,
             y,
-            z
+            z,
+            particle_id
         }
     }
+}
+
+fn display_all_particle_info(particles: &Vec<Particle>, coordinates: &Vec<Coordinate>) {
+    for i in particles {
+        let coordinate = &coordinates[i.id as usize];
+        println!("{i:?}\n{coordinate:?}");
+    }
+}
+
+fn tick(mut particles: Vec<Particle>, mut coordinates: Vec<Coordinate>) {
+    for particle in &mut particles {
+        coordinates[particle.id as usize].x += 1;
+    }
+    
+    display_all_particle_info(&particles, &coordinates);
+    let sleep_time = core::time::Duration::new(1, 0);
+    sleep(sleep_time);
+    tick(particles, coordinates);
+}
+
+fn main() {
+    // let mut container: Vec<Particle> = Vec::new();
+    let mut particles: Vec<Particle> = Vec::new();
+    let mut coordinates: Vec<Coordinate> = Vec::new();
+    for i in 0..4 {
+        let coordinate = Coordinate::new(i, 0, 0, i);
+        particles.push(Particle::new(i, 37982, 1));
+        coordinates.push(coordinate);
+    }
+    
+    tick(particles, coordinates);
 }
 
 // struct Container {
@@ -52,32 +85,3 @@ impl Coordinates {
 //         }
 //     }
 // }
-
-fn display_all_particle_info(particles: &Vec<Particle>) {
-    for i in particles {
-        println!("Particles: {i:?}")
-    }
-}
-
-fn tick(mut particles: Vec<Particle>) {
-    for particle in &mut particles {
-        particle.coordinates.x += 1;
-    }
-    
-    display_all_particle_info(&particles);
-    let sleep_time = core::time::Duration::new(1, 0);
-    sleep(sleep_time);
-    tick(particles);
-}
-
-fn main() {
-    // let mut container: Vec<Particle> = Vec::new();
-    let mut particles: Vec<Particle> = Vec::new();
-    for i in 0..4 {
-        let coordinates = Coordinates::new(i, 0, 0);
-        particles.push(Particle::new(coordinates, 37982, 1));
-    }
-    display_all_particle_info(&particles);
-    
-    tick(particles);
-}
