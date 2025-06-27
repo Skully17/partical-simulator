@@ -58,6 +58,19 @@ fn main() {
     // let mut container: Vec<Particle> = Vec::new();
     let mut particles: Vec<Particle> = Vec::new();
     let mut coordinates: Vec<Coordinate> = Vec::new();
+    let mut partical_id = 0;
+    for x in 0..10 {
+        for y in 0..10 {
+            for z in 0..10 {
+                if (x ^ y ^ z) != 0 && !(x > 0 && y > 0 && z > 0) {  // todo don't think this is right. Re-think
+                    let coordinate = Coordinate::new(x, y, z, partical_id);
+                    particles.push(Particle::new(partical_id, 37982, 1));
+                    coordinates.push(coordinate);
+                    partical_id += 1;
+                }
+            }
+        }
+    }
     for i in 0..4 {
         let coordinate = Coordinate::new(i, 0, 0, i);
         particles.push(Particle::new(i, 37982, 1));
