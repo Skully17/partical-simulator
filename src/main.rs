@@ -71,8 +71,8 @@ pub const COL_SPACING: f32 = 30.;
 
 /// This function draws the (immediate-mode) GUI.
 /// [UI items](https://docs.rs/egui/latest/egui/struct.Ui.html#method.heading)
-pub fn ui_handler(state: &mut State, ctx: &Context, scene: &mut Scene) -> EngineUpdates {
-    let mut engine_updates = EngineUpdates::default();
+fn ui_handler(state: &mut State, ctx: &Context, mut scene: &mut Scene) -> EngineUpdates {
+    let engine_updates = EngineUpdates::default();
 
     TopBottomPanel::top("0").show(ctx, |ui| {
         ui.spacing_mut().slider_width = SLIDER_WIDTH;
@@ -92,21 +92,32 @@ pub fn ui_handler(state: &mut State, ctx: &Context, scene: &mut Scene) -> Engine
 fn draw_entities(entities: &mut Vec<Entity>, coordinates: &Vec<Coordinate>) {
     *entities = Vec::new();
 
+    let mut containing_box = Entity::new(
+        1, // Index of the mesh.
+        Vec3::new(0., 0., 0.),
+        Quaternion::default(),
+        1.,
+        (100.0, 100.0, 100.0),
+        BODY_SHINYNESS,
+    );
+    containing_box.opacity = 0.1;
+    entities.push(containing_box);
+
     let mut index = 0;
     for coordinate in coordinates {
         // Alternate way to construct: use its `Default` impl, overriding fields as required.
         entities.push(
             // manually set the `scale_partial` field with a `Vec3` if using non-uniform scaling. 
             Entity::new(
-                index, // Index of the mesh.
+                0, // Index of the mesh.
                 Vec3::new(
-                    (coordinate.x as f32) / 1.,
-                    (coordinate.y as f32) / 1.,
-                    (coordinate.z as f32) / 1.
+                    (coordinate.x as f32) * 5.,
+                    (coordinate.y as f32) * 5.,
+                    (coordinate.z as f32) * 5.
                 ),
                 Quaternion::default(),
                 1.,
-                (0.0, 0.0, 10.0),
+                (0.0, 0.0, 100.0),
                 BODY_SHINYNESS,
             )
         );
@@ -118,20 +129,14 @@ fn draw_entities(entities: &mut Vec<Entity>, coordinates: &Vec<Coordinate>) {
 fn render(state: State, coordinates: &Vec<Coordinate>) {
     let mut scene = Scene {
         meshes: vec![
-            Mesh::new_sphere(1., 3)
+            Mesh::new_sphere(1., 3),
+            Mesh::new_box(100., 100., 100.)
         ],
         entities: Vec::new(), // updated below.
-        gaussians: vec![
-            Gaussian {
-                center: Vec3::new_zero(),
-                amplitude: 1.,
-                width: 3.,
-                color: [1., 0., 0.5, 1.],
-            }
-        ],
+        gaussians: vec![],
         camera: Camera {
             fov_y: TAU / 8.,
-            position: Vec3::new(0., 10., -20.),
+            position: Vec3::new(0., 10., -150.),
             far: RENDER_DIST,
             orientation: Quaternion::from_axis_angle(RIGHT_VEC, TAU / 16.),
             ..Default::default()
@@ -247,6 +252,12 @@ fn tick(mut particles: Vec<Particle>, mut coordinates: Vec<Coordinate>) {
     let sleep_time = core::time::Duration::new(1, 0);
     sleep(sleep_time);
     tick(particles, coordinates);
+}
+
+fn tick_entities(mut scene: &mut Scene) {
+    for entity in &mut scene.entities {
+        entity.position.x += 1.;
+    }
 }
 
 fn main() {
